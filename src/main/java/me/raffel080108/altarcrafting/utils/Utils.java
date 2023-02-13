@@ -1,5 +1,6 @@
 package me.raffel080108.altarcrafting.utils;
 
+import me.raffel080108.altarcrafting.AltarCrafting;
 import me.raffel080108.altarcrafting.DataHandler;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.bukkit.*;
@@ -13,8 +14,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
-import me.raffel080108.altarcrafting.AltarCrafting;
-import revxrsal.commands.autocomplete.SuggestionProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,12 +74,12 @@ public final class Utils {
         }
     }
 
-    public boolean invalidConfigCheck() {
+    public boolean invalidConfigCheck(File config) {
         Logger log = dataHandler.getLogger();
         boolean success = true;
 
         try {
-            new YamlConfiguration().load(new File(main.getDataFolder(), "config.yml"));
+            new YamlConfiguration().load(config);
         } catch (IOException e) {
             e.printStackTrace();
             success = false;
@@ -88,19 +87,20 @@ public final class Utils {
             e.printStackTrace();
             success = false;
             try {
-                Files.copy(Paths.get(new File(main.getDataFolder(), "config.yml").getPath()), Paths.get(new File(main.getDataFolder(), "old_config.yml").getPath()), REPLACE_EXISTING);
+                String newFileName = "old_" + config.getName();
+                Files.copy(Paths.get(config.getPath()), Paths.get(new File(main.getDataFolder(), newFileName).getPath()), REPLACE_EXISTING);
                 main.saveResource("config.yml", true);
-                log.warning("----------\nInvalid config detected - Current configuration was backed up to old_config.yml and a new config.yml generated");
+                log.warning("----------\nInvalid configuration detected - Current configuration was backed up to " + newFileName + " and a new file containing the corresponding default configuration generated");
             } catch (IOException e2) {
                 e2.printStackTrace();
-                log.severe("----------\nInvalid config detected - Configuration backup failed");
+                log.severe("----------\nInvalid configuration detected - Backup failed");
             }
         }
         return success;
     }
 
     public void loadRecipes() {
-        HashMap<String, Map<ItemStack, Map<ItemStack, Boolean>>> recipes = dataHandler.getRecipes();
+        HashMap<String, Map<ItemStack, HashMap<ItemStack, Boolean>>> recipes = dataHandler.getRecipes();
         Logger log = dataHandler.getLogger();
 
         ConfigurationSection altars = dataHandler.getConfig().getConfigurationSection("altars");
@@ -139,7 +139,18 @@ public final class Utils {
                     log.warning("Could not find parameter \"result\" for recipe at path " + recipeParamsPath + ", while attempting to read recipes from the configuration");
                     continue;
                 }
-                Map<ItemStack, Boolean> resultItemMap = getItemFromParams(result);
+
+                String actionType = recipeParams.getString("on-completion");
+                if (actionType == null) {
+                    log.warning("Could not find parameter \"on-completion\" for recipe at path " + recipeParamsPath + ", while attempting to read recipes from the configuration. Assuming default value of \"item\"");
+                    actionType = "item";
+                }
+
+                Map<ItemStack, Boolean> resultItemMap = new HashMap<>();
+                if (!actionType.equalsIgnoreCase("command")) {
+                    resultItemMap = getItemFromParams(result);
+                }
+
                 if (resultItemMap == null)
                     continue;
 
@@ -169,7 +180,12 @@ public final class Utils {
                     ingredientsItems.putAll(itemForMap);
                 }
 
-                recipes.put(recipeParamsPath, Map.of(resultItemMap.entrySet().iterator().next().getKey(), ingredientsItems));
+                HashMap<ItemStack, HashMap<ItemStack, Boolean>> mapToPut = new HashMap<>();
+                if (resultItemMap.isEmpty()) {
+                    mapToPut.put(null, ingredientsItems);
+                } else mapToPut.put(resultItemMap.entrySet().iterator().next().getKey(), ingredientsItems);
+
+                recipes.put(recipeParamsPath, mapToPut);
             }
         }
     }
@@ -250,12 +266,34 @@ public final class Utils {
         return Map.of(item, nbtParams == null && itemParams.getBoolean("ignore-nbt"));
     }
 
-    public void setupAutoComplete() {
-        ConfigurationSection altars = dataHandler.getConfig().getConfigurationSection("altars");
-        if (altars != null)
-            dataHandler.getAutoCompleter().registerSuggestion("altarsList", SuggestionProvider.of(altars.getKeys(false)));
-        else
-            dataHandler.getLogger().severe("Could not find configuration-section \"altars\" while attempting to register auto-completion. " +
-                    "Please check your configuration");
+    public boolean loadConfigurations() {
+        Logger log = dataHandler.getLogger();
+        boolean success = true;
+
+        log.info("Loading config...");
+        if (!new File(main.getDataFolder(), "config.yml").exists())
+            main.saveResource("config.yml", false);
+
+        File configFile = new File(main.getDataFolder(), "config.yml");
+        if (!invalidConfigCheck(configFile))
+            success = false;
+
+        dataHandler.setConfig(YamlConfiguration.loadConfiguration(configFile));
+
+        log.info("Loading messages...");
+        if (!new File(main.getDataFolder(), "messages.yml").exists())
+            main.saveResource("messages.yml", false);
+
+        File messagesFile = new File(main.getDataFolder(), "messages.yml");
+        if (!invalidConfigCheck(messagesFile))
+            success = false;
+
+        dataHandler.setMessages(YamlConfiguration.loadConfiguration(messagesFile));
+
+        log.info("Loading recipes...");
+        loadRecipes();
+
+        log.info("Reload complete!");
+        return success;
     }
 }

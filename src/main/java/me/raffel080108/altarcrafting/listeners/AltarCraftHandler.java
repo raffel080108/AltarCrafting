@@ -6,6 +6,7 @@ import me.raffel080108.altarcrafting.utils.Utils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
@@ -47,6 +48,7 @@ public final class AltarCraftHandler implements Listener {
         HashMap<Player, BukkitTask> activeCraftTimeoutTasks = dataHandler.getActiveCraftingTasks();
         ArrayList<Player> craftingInProgress = dataHandler.getCraftingInProgress();
         HashMap<Player, Long> interactEventCooldown = dataHandler.getInteractEventCooldown();
+        FileConfiguration messages = dataHandler.getMessages();
 
         if (event.useInteractedBlock().equals(Event.Result.DENY) || event.useItemInHand().equals(Event.Result.DENY))
             return;
@@ -72,18 +74,20 @@ public final class AltarCraftHandler implements Listener {
                 return;
         interactEventCooldown.put(player, System.currentTimeMillis());
 
-        if (craftingInProgress.contains(player)) {
-            player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
-            player.sendMessage("§cYou cannot use the altar, while there is crafting in progress!");
-            return;
-        }
-
         if (playerCraftingAltarLocations.containsValue(clickedLocation)) {
             if (!playerCraftingAltarLocations.get(player).equals(clickedLocation)) {
                 player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
-                player.sendMessage("§cAnother player is currently using this altar - Please wait until they finish");
+                String message = messages.getString("message-interaction-failed-crafting-in-progress");
+                player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cAnother player is currently using this altar - Please wait until they finish");
                 return;
             }
+        }
+
+        if (craftingInProgress.contains(player)) {
+            player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
+            String message = messages.getString("message-placement-failed-in-progress");
+            player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cYou cannot use the altar, while there is crafting in progress!");
+            return;
         }
 
         World world = clickedLocation.getWorld();
@@ -101,21 +105,24 @@ public final class AltarCraftHandler implements Listener {
 
             if (itemsPlacedForCrafting.containsValue(item)) {
                 player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
-                player.sendMessage("§cAn item like this is already on the altar!");
+                String message = messages.getString("message-placement-failed-duplicate-item");
+                player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cAn item like this is already on the altar!");
                 return;
             }
 
             if (playerCraftingAltarLocations.containsKey(player)) {
                 if (!playerCraftingAltarLocations.get(player).equals(altarLocation)) {
                     utils.cancelAltarCraftingSession(player);
-                    player.sendMessage("§6Your altar-crafting-session on a different altar was cancelled and a new one started for this altar");
+                    String message = messages.getString("message-new-crafting-session-started");
+                    player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§6Your altar-crafting-session on a different altar was cancelled and a new one started for this altar");
                 }
             }
 
             String altarParamsPath = altarLocations.get(ingredientPlacementLocations.get(clickedLocation));
             ConfigurationSection altarParams = config.getConfigurationSection(altarParamsPath);
             if (altarParams == null) {
-                player.sendMessage("§cInternal error occurred while attempting to parse ingredient-placement");
+                String message = messages.getString("message-placement-failed-internal-error");
+                player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cInternal error occurred while attempting to parse ingredient-placement");
                 log.severe("Could not find parameters for altar at path " + altarParamsPath + ", while attempting to parse ingredient-placement for player " + player.getName());
                 return;
             }
@@ -126,7 +133,8 @@ public final class AltarCraftHandler implements Listener {
                         Bukkit.getScheduler().runTaskLater(main, () -> {
                             utils.cancelAltarCraftingSession(player);
                             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1000F, 1F);
-                            player.sendMessage("§cYour altar-crafting-session timed out - All placed items have been returned to your inventory");
+                            String message = messages.getString("message-crafting-session-timeout");
+                            player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cYour altar-crafting-session timed out - All placed items have been returned to your inventory");
                         }, craftingTimeout));
 
             player.getEquipment().setItemInMainHand(null);
@@ -146,11 +154,14 @@ public final class AltarCraftHandler implements Listener {
             Collection<ItemStack> placedItems = itemsPlacedForCrafting.get(clickedLocation);
             if (placedItems.size() == 0) {
                 player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
-                player.sendMessage("§cPlease place items on the altar before trying to craft something");
+                String message = messages.getString("message-crafting-failed-no-items");
+                player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cPlease place items on the altar before trying to craft something");
                 return;
             }
 
-            String playerErrorMsg = "§cInternal error occurred while attempting to parse valid-recipe-check";
+            String message = messages.getString("message-crafting-failed-internal-error");
+            String playerErrorMsg = message != null ? ChatColor.translateAlternateColorCodes('&', message) : "&cInternal error occurred while attempting to parse valid-recipe-check";
+
             String altarParamsPath = altarLocations.get(clickedLocation);
             ConfigurationSection altarParams = config.getConfigurationSection(altarParamsPath);
             if (altarParams == null) {
@@ -170,13 +181,13 @@ public final class AltarCraftHandler implements Listener {
 
             for (String altarRecipe : altarRecipes.getKeys(false)) {
                 String recipePath = altarRecipes.getCurrentPath() + "." + altarRecipe;
-                Map<ItemStack, Map<ItemStack, Boolean>> recipeMap = dataHandler.getRecipes().get(recipePath);
+                Map<ItemStack, HashMap<ItemStack, Boolean>> recipeMap = dataHandler.getRecipes().get(recipePath);
                 if (recipeMap == null) {
                     log.severe("Could not find cached recipe for path " + recipePath + ", during a valid-recipe-check. You can try to fix this by reloading the configuration. If the issue persists, there is most likely an issue with your configuration");
                     continue;
                 }
 
-                for (Map.Entry<ItemStack, Map<ItemStack, Boolean>> recipe : recipeMap.entrySet()) {
+                for (Map.Entry<ItemStack, HashMap<ItemStack, Boolean>> recipe : recipeMap.entrySet()) {
                     Map<ItemStack, Boolean> ingredients = recipe.getValue();
                     int matchedItemsAmount = 0;
 
@@ -199,8 +210,6 @@ public final class AltarCraftHandler implements Listener {
 
                     if (matchedItemsAmount != placedItems.size() || matchedItemsAmount != ingredients.size())
                         continue;
-
-                    ItemStack result = recipe.getKey();
 
                     ConfigurationSection recipeParams = config.getConfigurationSection(recipePath);
                     if (recipeParams == null) {
@@ -225,6 +234,61 @@ public final class AltarCraftHandler implements Listener {
                         }
                     }
 
+                    String actionType = recipeParams.getString("on-completion");
+                    if (actionType == null) {
+                        log.warning("Found invalid value for parameter \"actionType\" for recipe at path " + recipeParams + ". Defaulting to action type \"item\"");
+                        actionType = "item";
+                    }
+                    boolean actionIsBoth = actionType.equalsIgnoreCase("both");
+                    boolean actionIsItem = actionType.equalsIgnoreCase("item");
+                    boolean actionIsCommand = actionType.equalsIgnoreCase("command");
+
+                    HashMap<CommandSender, String> commands = new HashMap<>();
+                    if (actionIsCommand || actionIsBoth) {
+                        ConfigurationSection commandsConfigSection = recipeParams.getConfigurationSection("commands");
+                        if (commandsConfigSection == null) {
+                            log.severe("Could not find parameter \"commands\" for recipe at path " + recipePath + ", while action-type is \"command\" or \"both\"");
+                            return;
+                        }
+
+                        for (String commandConfig : commandsConfigSection.getKeys(false)) {
+                            ConfigurationSection commandParams = commandsConfigSection.getConfigurationSection(commandConfig);
+                            if (commandParams == null)
+                                continue;
+                            String commandParamsPath = commandParams.getCurrentPath();
+
+                            String commandSenderString = commandParams.getString("sender");
+                            if (commandSenderString == null) {
+                                log.warning("Could not find parameter \"sender\" for command at " + commandParamsPath);
+                                continue;
+                            }
+
+                            CommandSender commandSender;
+                            if (commandSenderString.equalsIgnoreCase("player"))
+                                commandSender = player;
+                            else {
+                                commandSender = Bukkit.getConsoleSender();
+                                if (!commandSenderString.equalsIgnoreCase("console"))
+                                    log.warning("Found invalid value for parameter \"sender\" for command at " + commandParamsPath + ". Defaulting to \"console\"");
+                            }
+
+                            String command = commandParams.getString("command");
+                            if (command == null) {
+                                log.warning("Could not find parameter \"command\" for command at " + commandParamsPath);
+                                continue;
+                            }
+
+                            commands.put(commandSender, command.replace("%player%", player.getName()));
+                        }
+                    }
+
+                    ItemStack result = recipe.getKey();
+                    if ((actionIsItem || actionIsBoth) && result == null) {
+                        player.sendMessage(playerErrorMsg);
+                        log.severe("Cannot find result for recipe at " + recipePath + ", while action-type is \"item\" or \"both\"");
+                        return;
+                    }
+
                     craftingInProgress.add(player);
 
                     boolean lightningEnabled = recipeParams.getBoolean("enable-lightning");
@@ -234,7 +298,12 @@ public final class AltarCraftHandler implements Listener {
                             clickedLocation.getY() + 1, clickedLocation.getZ() + 0.5D);
 
                     if (completionDelay == 0) {
-                        triggerCraftingComplete(world, centerLocation, result, lightningEnabled, clickedLocation);
+                        if (actionIsItem || actionIsBoth)
+                            dropCraftedItem(lightningEnabled, result, centerLocation);
+                        if (actionIsCommand || actionIsBoth)
+                            for (Map.Entry<CommandSender, String> entry : commands.entrySet())
+                                Bukkit.dispatchCommand(entry.getKey(), entry.getValue());
+                        triggerCraftingComplete(clickedLocation);
                         return;
                     }
 
@@ -298,9 +367,10 @@ public final class AltarCraftHandler implements Listener {
                             Vector vector = location.toVector();
                             for (double length = 0; length < location.distance(centerLocation);
                                  vector.add(centerLocation.toVector().clone().subtract(vector).normalize().multiply(0.1))) {
+                                double x = vector.getX(), y = vector.getY(), z = vector.getZ();
                                 if (finalParticle.equals(Particle.REDSTONE))
-                                    world.spawnParticle(Particle.REDSTONE, vector.getX(), vector.getY(), vector.getZ(), 1, particleData);
-                                else world.spawnParticle(finalParticle, vector.getX(), vector.getY(), vector.getZ(), 1);
+                                    world.spawnParticle(Particle.REDSTONE, x, y, z, 1, particleData);
+                                else world.spawnParticle(finalParticle, x, y, z, 1);
 
                                 length += 0.1;
                             }
@@ -310,7 +380,13 @@ public final class AltarCraftHandler implements Listener {
                     BukkitTask soundTask = scheduler.runTaskTimer(main, () -> world.playSound(centerLocation, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1F, 1F), 0L, 20L);
 
                     scheduler.runTaskLater(main, () -> {
-                        triggerCraftingComplete(world, centerLocation, result, lightningEnabled, clickedLocation);
+                        if (actionIsItem || actionIsBoth)
+                            dropCraftedItem(lightningEnabled, result, centerLocation);
+                        if (actionIsCommand || actionIsBoth)
+                            for (Map.Entry<CommandSender, String> entry : commands.entrySet())
+                                Bukkit.dispatchCommand(entry.getKey(), entry.getValue());
+                        triggerCraftingComplete(clickedLocation);
+
                         soundTask.cancel();
                         for (BukkitTask task : particleTasks)
                             task.cancel();
@@ -322,20 +398,24 @@ public final class AltarCraftHandler implements Listener {
             }
             utils.cancelAltarCraftingSession(player);
             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1000F, 1F);
-            player.sendMessage("§cInvalid recipe, please try again");
+            String message2 = messages.getString("message-crafting-failed-invalid-recipe");
+            player.sendMessage(message2 != null ? ChatColor.translateAlternateColorCodes('&', message2) : "§cInvalid recipe, please try again");
         }
     }
 
-    private void triggerCraftingComplete(World world, Location centerLocation, ItemStack result, boolean lightningEnabled, Location clickedLocation) {
-        HashMap<ItemStack, Location> placedItemLocations = dataHandler.getPlacedItemsLocations();
-        MultiValuedMap<Location, ItemStack> itemsPlacedForCrafting = dataHandler.getItemsPlacedForCrafting();
-
+    private void dropCraftedItem(boolean lightningEnabled, ItemStack result, Location centerLocation) {
+        World world = centerLocation.getWorld();
         if (lightningEnabled)
             world.strikeLightningEffect(centerLocation);
         else world.playSound(centerLocation, Sound.BLOCK_ANVIL_USE, 1L, 1L);
 
         Item droppedItem = world.dropItem(centerLocation, result);
         droppedItem.setVelocity(new Vector());
+    }
+
+    private void triggerCraftingComplete(Location clickedLocation) {
+        HashMap<ItemStack, Location> placedItemLocations = dataHandler.getPlacedItemsLocations();
+        MultiValuedMap<Location, ItemStack> itemsPlacedForCrafting = dataHandler.getItemsPlacedForCrafting();
 
         for (ItemStack item : itemsPlacedForCrafting.get(clickedLocation)) {
             Collection<ItemFrame> foundItemFrames = placedItemLocations.get(item).getNearbyEntitiesByType(ItemFrame.class, 0.5D);

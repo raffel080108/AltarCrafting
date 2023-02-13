@@ -3,10 +3,8 @@ package me.raffel080108.altarcrafting.listeners;
 import me.raffel080108.altarcrafting.DataHandler;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.apache.commons.collections4.MultiValuedMap;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -38,6 +36,7 @@ public final class PlayerEntityInteractListener implements Listener {
         HashMap<Player, Location> playerCraftingAltarLocations = dataHandler.getPlayerCraftingAltarLocations();
         HashMap<ItemStack, Location> placedItemsLocations = dataHandler.getPlacedItemsLocations();
         MultiValuedMap<Location, ItemStack> itemsPlacedForCrafting = dataHandler.getItemsPlacedForCrafting();
+        FileConfiguration messages = dataHandler.getMessages();
 
         if (event.isCancelled())
             return;
@@ -45,7 +44,8 @@ public final class PlayerEntityInteractListener implements Listener {
         Player player = event.getPlayer();
         if (dataHandler.getCraftingInProgress().contains(player)) {
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
-            player.sendMessage("§cYou cannot use the altar, while there is crafting in progress!");
+            String message = messages.getString("message-interaction-failed-crafting-in-progress");
+            player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cYou cannot use the altar, while there is crafting in progress!");
             return;
         }
 
@@ -76,7 +76,8 @@ public final class PlayerEntityInteractListener implements Listener {
         }
 
         if (!altarLocation.equals(playerCraftingAltarLocations.get(player))) {
-            player.sendMessage("§cAnother player is currently using this altar - Please wait until they finish");
+            String message = messages.getString("message-interaction-failed-occupied");
+            player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cAnother player is currently using this altar - Please wait until they finish");
             return;
         }
 

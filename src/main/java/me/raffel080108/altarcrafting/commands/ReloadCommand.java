@@ -1,8 +1,10 @@
 package me.raffel080108.altarcrafting.commands;
 
+import me.raffel080108.altarcrafting.AltarCrafting;
 import me.raffel080108.altarcrafting.DataHandler;
 import me.raffel080108.altarcrafting.utils.Utils;
-import me.raffel080108.altarcrafting.AltarCrafting;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 import revxrsal.commands.annotation.Command;
 import revxrsal.commands.bukkit.annotation.CommandPermission;
 import revxrsal.commands.command.CommandActor;
@@ -21,15 +23,16 @@ public final class ReloadCommand {
     @Command("altarCrafting reload")
     @CommandPermission("altarCrafting.reload")
     private void reloadCommand(CommandActor sender) {
-        main.saveDefaultConfig();
-        if (utils.invalidConfigCheck()) {
-            sender.reply("§aConfiguration reloaded successfully");
-            main.getLogger().info("Configuration reloaded by " + sender.getName());
-        } else sender.reply("§cError while reloading configuration, please check your console for detailed error-log");
-        main.reloadConfig();
-        dataHandler.setConfig(main.getConfig());
+        FileConfiguration messages = dataHandler.getMessages();
 
-        utils.loadRecipes();
-        utils.setupAutoComplete();
+        dataHandler.getLogger().info("RELOADING...");
+        if (utils.loadConfigurations()) {
+            String message = messages.getString("message-reloaded-configuration-success");
+            sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§aConfiguration reloaded successfully");
+            main.getLogger().info("Configuration reloaded by " + sender.getName());
+        } else {
+            String message = messages.getString("message-reload-configuration-error");
+            sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cAn error occurred while reloading configurations, please check the server console for detailed error-log");
+        }
     }
 }

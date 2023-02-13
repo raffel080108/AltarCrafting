@@ -18,12 +18,13 @@ import java.util.logging.Logger;
 public final class DataHandler {
     private final NamespacedKey ingredientAmountKey;
     private FileConfiguration config;
+    private FileConfiguration messages;
     private final Logger logger;
     private AutoCompleter autoCompleter;
     private final HashMap<Location, String> altarLocations = new HashMap<>();
     private final HashMap<Location, Location> baseLayerLocations = new HashMap<>();
     private final HashMap<Location, Location> ingredientPlacementLocations = new HashMap<>();
-    private final HashMap<String, Map<ItemStack, Map<ItemStack, Boolean>>> recipes = new HashMap<>();
+    private final HashMap<String, Map<ItemStack, HashMap<ItemStack, Boolean>>> recipes = new HashMap<>();
     private final HashMap<Player, Location> playerCraftingAltarLocations = new HashMap<>();
     private final MultiValuedMap<Location, ItemStack> itemsPlacedForCrafting = new ArrayListValuedHashMap<>();
     private final HashMap<ItemStack, Location> placedItemsLocations = new HashMap<>();
@@ -48,6 +49,14 @@ public final class DataHandler {
 
     public void setConfig(FileConfiguration config) {
         this.config = config;
+    }
+
+    public FileConfiguration getMessages() {
+        return messages;
+    }
+
+    public void setMessages(FileConfiguration messages) {
+        this.messages = messages;
     }
     
     public Logger getLogger() {
@@ -74,7 +83,7 @@ public final class DataHandler {
         return ingredientPlacementLocations;
     }
 
-    public HashMap<String, Map<ItemStack, Map<ItemStack, Boolean>>> getRecipes() {
+    public HashMap<String, Map<ItemStack, HashMap<ItemStack, Boolean>>> getRecipes() {
         return recipes;
     }
 

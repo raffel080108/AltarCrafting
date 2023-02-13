@@ -1,14 +1,12 @@
 package me.raffel080108.altarcrafting;
 
-import me.raffel080108.altarcrafting.commands.AutoCompleteOnlinePlayers;
-import me.raffel080108.altarcrafting.commands.CancelAltarCraftingCommand;
-import me.raffel080108.altarcrafting.commands.CreateAltarCommand;
-import me.raffel080108.altarcrafting.commands.ReloadCommand;
+import me.raffel080108.altarcrafting.commands.*;
 import me.raffel080108.altarcrafting.listeners.*;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -36,14 +34,10 @@ public final class AltarCrafting extends JavaPlugin {
         dataHandler = new DataHandler(this);
         Utils utils = new Utils(this, dataHandler);
 
-        log.info("Loading config...");
-        saveDefaultConfig();
-        utils.invalidConfigCheck();
-        reloadConfig();
+        utils.loadConfigurations();
 
         log.info("Loading recipes...");
         utils.loadRecipes();
-
 
         log.info("Registering listeners...");
         PluginManager pluginManager = Bukkit.getPluginManager();
@@ -58,7 +52,6 @@ public final class AltarCrafting extends JavaPlugin {
         BukkitCommandHandler commandHandler = BukkitCommandHandler.create(this);
         AutoCompleter autoCompleter = commandHandler.getAutoCompleter();
         dataHandler.setAutoCompleter(autoCompleter);
-        utils.setupAutoComplete();
         autoCompleter.registerSuggestionFactory(parameter -> {
             if (parameter.hasAnnotation(AutoCompleteOnlinePlayers.class)) {
                 return (args, sender, command) -> {
@@ -66,6 +59,20 @@ public final class AltarCrafting extends JavaPlugin {
                     for (Player player : Bukkit.getOnlinePlayers())
                         players.add(player.getName());
                     return players;
+                };
+            }
+            return null;
+        });
+
+        autoCompleter.registerSuggestionFactory(parameter -> {
+            if (parameter.hasAnnotation(AutoCompleteAltarsList.class)) {
+                return (args, sender, command) -> {
+                    ConfigurationSection altars = dataHandler.getConfig().getConfigurationSection("altars");
+                    if (altars == null) {
+                        dataHandler.getLogger().severe("Could not find configuration-section \"altars\" while attempting to auto-complete a command. Please check your configuration");
+                        return List.of();
+                    }
+                    return altars.getKeys(false);
                 };
             }
             return null;
@@ -86,7 +93,6 @@ public final class AltarCrafting extends JavaPlugin {
                 "This most likely occurred due to modification of the data-file.\n" +
                 "If this issue persists, try clearing the data-file - If the issue still persists please contact the plugin developer";
 
-
         HashMap<Location, String> altarLocations = new HashMap<>();
         List<String> altarLocationsStringList = data.getStringList("altarLocations");
         for (String string : altarLocationsStringList) {
@@ -100,7 +106,7 @@ public final class AltarCrafting extends JavaPlugin {
             }
 
             if (getConfig().getConfigurationSection(splitString[1]) == null) {
-                log.severe("Could not find altar-parameters at path " + splitString[1] + " while attempting to load data from data-file");
+                log.severe("Could not find altar-parameters for path " + splitString[1] + " while attempting to load data from data-file");
                 continue;
             }
 
