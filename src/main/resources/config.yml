@@ -23,9 +23,9 @@
 # ----- OR ----- (These will only work if the MMOItems plugin is present on the server!)
 # - mmoItems-type -> MMOItems item-type
 # - mmoItems-id -> MMOItems item-id
+# - amount (optional) -> [Same as above]
 # Note: I have never used or interacted with this plugin myself, this implementation is only by request of the client I originally made this plugin for.
 # If you have the plugin and want to use this, you'll have to figure out how to get those 2 values on your own, sorry :)
-# As I will not buy a premium plugin, simply to test such a minor API implementation, I am also unfortunately unable to test this feature.
 
 # NBT Parameters:
 # - name (optional) -> Display name of the item

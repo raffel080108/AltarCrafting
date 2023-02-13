@@ -177,12 +177,15 @@ public final class AltarCraftHandler implements Listener {
 
                 for (Map.Entry<ItemStack, Map<ItemStack, Boolean>> recipe : recipeMap.entrySet()) {
                     Map<ItemStack, Boolean> ingredients = recipe.getValue();
-                    ArrayList<ItemStack> matchedItems = new ArrayList<>();
+                    int matchedItemsAmount = 0;
 
                     for (ItemStack placedItem : placedItems) {
                         for (Map.Entry<ItemStack, Boolean> entry : ingredients.entrySet()) {
                             ItemStack ingredient = entry.getKey();
 
+                            log.info("----------");
+                            log.info("DEBUG: placedItem = " + placedItem);
+                            log.info("DEBUG: ingredient = " + ingredient);
                             if (entry.getValue()) {
                                 ItemStack placedItemNoNbt = placedItem.clone();
                                 placedItemNoNbt.setItemMeta(null);
@@ -191,12 +194,15 @@ public final class AltarCraftHandler implements Listener {
                             } else if (!ingredient.equals(placedItem))
                                 continue;
 
-                            matchedItems.add(placedItem);
+                            matchedItemsAmount++;
                             break;
                         }
                     }
 
-                    if (matchedItems.size() != placedItems.size())
+                    log.info("DEBUG: matchedItemsAmount = " + matchedItemsAmount);
+                    log.info("DEBUG: placedItems.size() = " + placedItems.size());
+                    log.info("DEBUG: ingredients.size() = " + ingredients.size());
+                    if (matchedItemsAmount != placedItems.size() || matchedItemsAmount != ingredients.size())
                         continue;
 
                     ItemStack result = recipe.getKey();
