@@ -27,7 +27,7 @@ public final class ReloadCommand {
 
         dataHandler.getLogger().info("RELOADING...");
         if (utils.loadConfigurations()) {
-            String message = messages.getString("message-reloaded-configuration-success");
+            String message = messages.getString("message-reload-configuration-success");
             sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§aConfiguration reloaded successfully");
             main.getLogger().info("Configuration reloaded by " + sender.getName());
         } else {
