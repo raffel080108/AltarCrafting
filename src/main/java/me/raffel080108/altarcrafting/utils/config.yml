@@ -1,0 +1,64 @@
+# Altar Parameters:
+# - altar-type (4 or 8) -> The amount of crafting slots available on the altar (Determines the altar's shape as well)
+# - base-material -> This is the material required to be used for the base layer of the altar
+# - center-material -> If you want the center-block, where a recipe result gets output to be different from the base-material, provide this parameter. Otherwise, just don't include it, it will default to using the base material.
+# - corners-material -> Same as center-material, just with the corner blocks, where the recipe ingredients get put
+# - crafting-timeout (in ticks - 1 second = 20 ticks) (optional) -> A player's crafting-session will be automatically aborted after this amount of time has passed.
+# - {recipes} -> Altar recipes, see below for parameters
+
+# Recipe parameters:
+# - [ingredients] -> Ingredients required for the recipe, that will have to be put on the corner blocks (of the second layer) of the altar
+# - [result] -> Result of the recipe, that will appear in the center block (of the second layer) of the altar
+# - completion-delay (in ticks - 1 second = 20 ticks) (optional) -> If parameter is set, when the recipe is completed successfully, there will be a delay before the result is actually outputted. This delay will be accompanied by particle effects and sounds
+# - delay-particle-type (optional) (only applicable if completion delay is set) -> The particle type to be used during the completion-delay of the recipe (there will be a line forming between the center block and the ingredient-placement-locations that consists of the selected particles type). Will default to particle-type REDSTONE if unset or invalid. A list of particle types can be found here: https://jd.papermc.io/paper/1.18/org/bukkit/Particle.html
+# - delay-particle-color (optional) (only applicable if parameter delay-particle-type is set to "REDSTONE") (RGB-Color Format: red, green, blue) -> This will determine the color of the particle, if the particle-type is "REDSTONE". Will default to 128, 0, 128 (Purple-ish) if unset or invalid.
+# - enable-lightning [true/false] (optional) -> If enabled, completing this recipe on the altar will result in a lightning-strike effect occurring (above the center block of the altar). If disabled, an anvil sound will play instead
+
+# Item parameters (applies to ingredient and result items):
+# - material -> Material of the item
+# - amount (optional) -> How many items are required to be input into/will be output by the recipe. If the parameter is not provided or is invalid, as in less than 1, not a number, or larger than the possible stack size of the respective item, a default value of 1 will be used (in either case)
+# - nbt (optional) -> Optional item nbt to be checked (for an ingredient)/applied (to a result) - See below for parameters
+# Additional parameter for ingredient items:
+# - ignore-nbt [true/false] (optional) -> If enabled, the check for the item will not check if nbt-data of the provided item and the item in the config matches (Only applicable if parameter nbt is unset)
+# ----- OR ----- (These will only work if the MMOItems plugin is present on the server!)
+# - mmoItems-type -> MMOItems item-type
+# - mmoItems-id -> MMOItems item-id
+# - amount (optional) -> [Same as above]
+# Note: I have never used or interacted with this plugin myself, this implementation is only by request of the client I originally made this plugin for.
+# If you have the plugin and want to use this, you'll have to figure out how to get those 2 values on your own, sorry :)
+
+# NBT Parameters:
+# - name (optional) -> Display name of the item
+# - lore (optional) -> Lore of the item - List format
+# - [enchantments] (optional) -> List format; Format: (enchantment-name):(level)
+# - hide-enchants (optional) -> Sets the item flag on the item, that will hide enchantments from display to a player looking at the item in-game - Has no effect when set on an ingredient item
+
+# Note: Any numbered keys in this configuration are not required to be so. You can use any name for such configuration keys, as long as there are no duplicates
+
+altars:
+  example:
+    altar-type: 4
+    base-material: Stone_Bricks
+    center-material: Diamond_Block
+    corners-material: Emerald_Block
+    crafting-timeout: 1200 # in ticks
+    recipes:
+      1:
+        ingredients:
+          1:
+            material: Diamond
+            amount: 3
+          2:
+            material: Stick
+            amount: 2
+        result:
+          material: Diamond_Sword
+          nbt:
+            name: "&aCrafted from altar!"
+            lore:
+            - "&eThis is a very special sword"
+            - "&eIt was crafted from an &9&lAltar&e!"
+            enchantments:
+              unbreaking: 3
+        completion-delay: 40 # in ticks
+        enable-lightning: true

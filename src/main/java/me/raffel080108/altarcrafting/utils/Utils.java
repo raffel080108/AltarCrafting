@@ -180,6 +180,10 @@ public final class Utils {
         Logger log = dataHandler.getLogger();
         String itemParamsPath = itemParams.getCurrentPath();
 
+        int amount = itemParams.getInt("amount");
+        if (amount < 1)
+            amount = 1;
+
         String mmoItemsType = itemParams.getString("mmoItems-type");
         String mmoItemsId = itemParams.getString("mmoItems-id");
 
@@ -190,6 +194,7 @@ public final class Utils {
                     log.severe("Found invalid mmoItems-item item-data for item at path " + itemParamsPath + ", while attempting to read recipes from the configuration");
                     return null;
                 }
+                mmoitemsItem.setAmount(amount);
                 return Map.of(mmoitemsItem, false);
             } else
                 log.severe("Could not find MMOItems plugin, while attempting to read MMOItems item-data. Please check if the plugin is correctly installed and accessible by this plugin");
@@ -205,10 +210,6 @@ public final class Utils {
             log.severe("Found invalid value for parameter \"material\" for item at path " + itemParamsPath + ", while attempting to read recipes from the configuration");
             return null;
         }
-
-        int amount = itemParams.getInt("amount");
-        if (amount < 1)
-            amount = 1;
 
         ItemStack item = new ItemStack(material, amount);
 
