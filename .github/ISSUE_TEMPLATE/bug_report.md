@@ -3,7 +3,7 @@ name: Bug report
 about: Report a plugin bug or something that isn't working correctly and should be
   fixed (in your opinion)
 title: ''
-labels: ''
+labels: Bug
 assignees: raffel080108
 
 ---
