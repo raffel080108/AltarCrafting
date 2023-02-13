@@ -13,6 +13,8 @@
 # - delay-particle-type (optional) (only applicable if completion delay is set) -> The particle type to be used during the completion-delay of the recipe (there will be a line forming between the center block and the ingredient-placement-locations that consists of the selected particles type). Will default to particle-type REDSTONE if unset or invalid. A list of particle types can be found here: https://jd.papermc.io/paper/1.18/org/bukkit/Particle.html
 # - delay-particle-color (optional) (only applicable if parameter delay-particle-type is set to "REDSTONE") (RGB-Color Format: red, green, blue) -> This will determine the color of the particle, if the particle-type is "REDSTONE". Will default to 128, 0, 128 (Purple-ish) if unset or invalid.
 # - enable-lightning [true/false] (optional) -> If enabled, completing this recipe on the altar will result in a lightning-strike effect occurring (above the center block of the altar). If disabled, an anvil sound will play instead
+# - permission (optional) -> Permission required to use the recipe
+# - no-permission-message (optional) (Only applicable if permission parameter is set) -> The message displayed to a player when they attempt to use the recipe, but do not have permission to do so. If unset, the player will be sent the default message for attempting to craft an invalid recipe
 
 # Item parameters (applies to ingredient and result items):
 # - material -> Material of the item
@@ -24,8 +26,6 @@
 # - mmoItems-type -> MMOItems item-type
 # - mmoItems-id -> MMOItems item-id
 # - amount (optional) -> [Same as above]
-# Note: I have never used or interacted with this plugin myself, this implementation is only by request of the client I originally made this plugin for.
-# If you have the plugin and want to use this, you'll have to figure out how to get those 2 values on your own, sorry :)
 
 # NBT Parameters:
 # - name (optional) -> Display name of the item

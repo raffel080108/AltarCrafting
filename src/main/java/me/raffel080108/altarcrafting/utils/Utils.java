@@ -150,7 +150,6 @@ public final class Utils {
                 }
 
                 HashMap<ItemStack, Boolean> ingredientsItems = new HashMap<>();
-                ArrayList<Material> materials = new ArrayList<>();
                 for (String ingredientString : ingredients.getKeys(false)) {
                     ConfigurationSection ingredientParams = ingredients.getConfigurationSection(ingredientString);
                     if (ingredientParams == null) {
@@ -162,13 +161,12 @@ public final class Utils {
                     if (itemForMap == null)
                         continue recipesLoop;
 
-                    Material material = itemForMap.entrySet().iterator().next().getKey().getType();
-                    if (materials.contains(material)) {
-                        log.warning("Found duplicate material for recipe at path " + recipeParamsPath + ", ignoring it");
-                        continue;
+                    if (ingredientsItems.containsKey(itemForMap.entrySet().iterator().next().getKey())) {
+                        log.warning("Found duplicate item while reading recipe at path " + recipeParamsPath + " - The recipe will not be cached. Please make sure there are no items listed as ingredients that have exactly matching nbt-data. Please note, that issues with other recipes might occur because of this");
+                        continue recipesLoop;
                     }
+
                     ingredientsItems.putAll(itemForMap);
-                    materials.add(material);
                 }
 
                 recipes.put(recipeParamsPath, Map.of(resultItemMap.entrySet().iterator().next().getKey(), ingredientsItems));
@@ -253,9 +251,9 @@ public final class Utils {
     }
 
     public void setupAutoComplete() {
-        ConfigurationSection entities = dataHandler.getConfig().getConfigurationSection("altars");
-        if (entities != null)
-            dataHandler.getAutoCompleter().registerSuggestion("altarsList", SuggestionProvider.of(entities.getKeys(false)));
+        ConfigurationSection altars = dataHandler.getConfig().getConfigurationSection("altars");
+        if (altars != null)
+            dataHandler.getAutoCompleter().registerSuggestion("altarsList", SuggestionProvider.of(altars.getKeys(false)));
         else
             dataHandler.getLogger().severe("Could not find configuration-section \"altars\" while attempting to register auto-completion. " +
                     "Please check your configuration");

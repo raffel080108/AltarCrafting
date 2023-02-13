@@ -154,6 +154,7 @@ public final class AltarCraftHandler implements Listener {
             String altarParamsPath = altarLocations.get(clickedLocation);
             ConfigurationSection altarParams = config.getConfigurationSection(altarParamsPath);
             if (altarParams == null) {
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 1000F, 1F);
                 player.sendMessage(playerErrorMsg);
                 log.severe("Could not find parameters for altar at path " + altarParamsPath + ", while attempting to parse a valid-recipe-check");
                 return;
@@ -161,6 +162,7 @@ public final class AltarCraftHandler implements Listener {
 
             ConfigurationSection altarRecipes = altarParams.getConfigurationSection("recipes");
             if (altarRecipes == null) {
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 1000F, 1F);
                 player.sendMessage(playerErrorMsg);
                 log.severe("Could not find parameter \"recipes\" for altar at path " + altarParamsPath + ", while attempting to parse a valid-recipe-check");
                 return;
@@ -170,9 +172,8 @@ public final class AltarCraftHandler implements Listener {
                 String recipePath = altarRecipes.getCurrentPath() + "." + altarRecipe;
                 Map<ItemStack, Map<ItemStack, Boolean>> recipeMap = dataHandler.getRecipes().get(recipePath);
                 if (recipeMap == null) {
-                    player.sendMessage(playerErrorMsg);
-                    log.severe("Could not find cached recipe for path " + recipePath + ", while attempting to parse a valid-recipe-check. You can try to fix this by reloading the configuration. If the issue persists, there is most likely an issue with your configuration itself");
-                    return;
+                    log.severe("Could not find cached recipe for path " + recipePath + ", during a valid-recipe-check. You can try to fix this by reloading the configuration. If the issue persists, there is most likely an issue with your configuration");
+                    continue;
                 }
 
                 for (Map.Entry<ItemStack, Map<ItemStack, Boolean>> recipe : recipeMap.entrySet()) {
@@ -204,11 +205,26 @@ public final class AltarCraftHandler implements Listener {
                     ConfigurationSection recipeParams = config.getConfigurationSection(recipePath);
                     if (recipeParams == null) {
                         player.sendMessage(playerErrorMsg);
+                        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 1000F, 1F);
                         log.severe("Could not find parameters for recipe at path " + recipePath + ", while attempting to parse a valid-recipe-check");
                         return;
                     }
 
                     utils.cancelCraftTimeout(player);
+
+                    String recipePermission = recipeParams.getString("permission");
+                    if (recipePermission != null) {
+                        if (!player.hasPermission(recipePermission)) {
+                            utils.cancelAltarCraftingSession(player);
+                            String noPermissionMessage = recipeParams.getString("no-permission-message");
+                            if (noPermissionMessage != null) {
+                                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1000F, 1F);
+                                player.sendMessage(ChatColor.translateAlternateColorCodes('&', noPermissionMessage));
+                                return;
+                            } else break;
+                        }
+                    }
+
                     craftingInProgress.add(player);
 
                     boolean lightningEnabled = recipeParams.getBoolean("enable-lightning");
