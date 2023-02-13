@@ -183,9 +183,6 @@ public final class AltarCraftHandler implements Listener {
                         for (Map.Entry<ItemStack, Boolean> entry : ingredients.entrySet()) {
                             ItemStack ingredient = entry.getKey();
 
-                            log.info("----------");
-                            log.info("DEBUG: placedItem = " + placedItem);
-                            log.info("DEBUG: ingredient = " + ingredient);
                             if (entry.getValue()) {
                                 ItemStack placedItemNoNbt = placedItem.clone();
                                 placedItemNoNbt.setItemMeta(null);
@@ -199,9 +196,6 @@ public final class AltarCraftHandler implements Listener {
                         }
                     }
 
-                    log.info("DEBUG: matchedItemsAmount = " + matchedItemsAmount);
-                    log.info("DEBUG: placedItems.size() = " + placedItems.size());
-                    log.info("DEBUG: ingredients.size() = " + ingredients.size());
                     if (matchedItemsAmount != placedItems.size() || matchedItemsAmount != ingredients.size())
                         continue;
 
