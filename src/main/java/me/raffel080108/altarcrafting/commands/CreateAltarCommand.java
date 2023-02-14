@@ -1,6 +1,6 @@
 package me.raffel080108.altarcrafting.commands;
 
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;

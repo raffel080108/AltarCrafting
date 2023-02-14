@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;

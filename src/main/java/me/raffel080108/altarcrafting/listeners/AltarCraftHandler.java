@@ -1,7 +1,7 @@
 package me.raffel080108.altarcrafting.listeners;
 
 import me.raffel080108.altarcrafting.AltarCrafting;
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.bukkit.*;
@@ -27,12 +27,10 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public final class AltarCraftHandler implements Listener {
-    private final AltarCrafting main;
     private final DataHandler dataHandler;
     private final Utils utils;
 
-    public AltarCraftHandler(AltarCrafting main, DataHandler dataHandler) {
-        this.main = main;
+    public AltarCraftHandler(DataHandler dataHandler) {
         this.dataHandler = dataHandler;
         this.utils = new Utils(dataHandler);
     }
@@ -49,6 +47,7 @@ public final class AltarCraftHandler implements Listener {
         ArrayList<Player> craftingInProgress = dataHandler.getCraftingInProgress();
         HashMap<Player, Long> interactEventCooldown = dataHandler.getInteractEventCooldown();
         FileConfiguration messages = dataHandler.getMessages();
+        AltarCrafting main = dataHandler.getMainInstance();
 
         if (event.useInteractedBlock().equals(Event.Result.DENY) || event.useItemInHand().equals(Event.Result.DENY))
             return;
@@ -92,8 +91,8 @@ public final class AltarCraftHandler implements Listener {
 
         World world = clickedLocation.getWorld();
 
-        FileConfiguration config = main.getConfig();
-        Logger log = main.getLogger();
+        FileConfiguration config = dataHandler.getConfig();
+        Logger log = dataHandler.getLogger();
         if (isIngredientPlacementLocation) {
             Location itemFrameLocation = new Location(world, clickedLocation.getX() + 0.5D, clickedLocation.getY() + 1,
                     clickedLocation.getZ() + 0.5D);

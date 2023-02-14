@@ -1,6 +1,6 @@
 package me.raffel080108.altarcrafting.listeners;
 
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

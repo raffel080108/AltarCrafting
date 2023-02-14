@@ -1,7 +1,6 @@
 package me.raffel080108.altarcrafting.commands;
 
-import me.raffel080108.altarcrafting.AltarCrafting;
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,9 +12,9 @@ public final class ReloadCommand {
     private final Utils utils;
     private final DataHandler dataHandler;
 
-    public ReloadCommand(AltarCrafting main, DataHandler dataHandler) {
+    public ReloadCommand(DataHandler dataHandler) {
         this.dataHandler = dataHandler;
-        this.utils = new Utils(main, dataHandler);
+        this.utils = new Utils(dataHandler);
     }
 
     @Command("altarCrafting reload")

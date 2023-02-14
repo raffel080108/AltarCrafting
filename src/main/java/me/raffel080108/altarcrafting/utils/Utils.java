@@ -1,7 +1,7 @@
 package me.raffel080108.altarcrafting.utils;
 
 import me.raffel080108.altarcrafting.AltarCrafting;
-import me.raffel080108.altarcrafting.DataHandler;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,15 +25,9 @@ import java.util.logging.Logger;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public final class Utils {
-    private AltarCrafting main = null;
     private DataHandler dataHandler;
 
     public Utils(DataHandler dataHandler) {
-        this.dataHandler = dataHandler;
-    }
-
-    public Utils(AltarCrafting main, DataHandler dataHandler) {
-        this.main = main;
         this.dataHandler = dataHandler;
     }
 
@@ -74,18 +68,19 @@ public final class Utils {
         }
     }
 
-    public boolean invalidConfigCheck(File config) {
+    public boolean validConfigCheck(File config) {
+        AltarCrafting main = dataHandler.getMainInstance();
         Logger log = dataHandler.getLogger();
-        boolean success = true;
+        boolean error = false;
 
         try {
             new YamlConfiguration().load(config);
         } catch (IOException e) {
             e.printStackTrace();
-            success = false;
+            error = true;
         } catch (InvalidConfigurationException e) {
             e.printStackTrace();
-            success = false;
+            error = true;
             try {
                 String newFileName = "old_" + config.getName();
                 Files.copy(Paths.get(config.getPath()), Paths.get(new File(main.getDataFolder(), newFileName).getPath()), REPLACE_EXISTING);
@@ -96,7 +91,7 @@ public final class Utils {
                 log.severe("----------\nInvalid configuration detected - Backup failed");
             }
         }
-        return success;
+        return error;
     }
 
     public void loadRecipes() {
@@ -267,6 +262,7 @@ public final class Utils {
     }
 
     public boolean loadConfigurations() {
+        AltarCrafting main = dataHandler.getMainInstance();
         Logger log = dataHandler.getLogger();
         boolean success = true;
 
@@ -275,7 +271,7 @@ public final class Utils {
             main.saveResource("config.yml", false);
 
         File configFile = new File(main.getDataFolder(), "config.yml");
-        if (!invalidConfigCheck(configFile))
+        if (validConfigCheck(configFile))
             success = false;
 
         dataHandler.setConfig(YamlConfiguration.loadConfiguration(configFile));
@@ -285,7 +281,7 @@ public final class Utils {
             main.saveResource("messages.yml", false);
 
         File messagesFile = new File(main.getDataFolder(), "messages.yml");
-        if (!invalidConfigCheck(messagesFile))
+        if (validConfigCheck(messagesFile))
             success = false;
 
         dataHandler.setMessages(YamlConfiguration.loadConfiguration(messagesFile));

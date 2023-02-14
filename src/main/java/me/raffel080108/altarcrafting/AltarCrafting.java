@@ -1,6 +1,7 @@
 package me.raffel080108.altarcrafting;
 
 import me.raffel080108.altarcrafting.commands.*;
+import me.raffel080108.altarcrafting.data.DataHandler;
 import me.raffel080108.altarcrafting.listeners.*;
 import me.raffel080108.altarcrafting.utils.Utils;
 import org.bukkit.Bukkit;
@@ -32,7 +33,7 @@ public final class AltarCrafting extends JavaPlugin {
     public void onEnable() {
         Logger log = getLogger();
         dataHandler = new DataHandler(this);
-        Utils utils = new Utils(this, dataHandler);
+        Utils utils = new Utils(dataHandler);
 
         utils.loadConfigurations();
 
@@ -41,7 +42,7 @@ public final class AltarCrafting extends JavaPlugin {
 
         log.info("Registering listeners...");
         PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new AltarCraftHandler(this, dataHandler), this);
+        pluginManager.registerEvents(new AltarCraftHandler(dataHandler), this);
         pluginManager.registerEvents(new AltarCreationHandler(dataHandler), this);
         pluginManager.registerEvents(new AltarDestructionHandler(dataHandler), this);
         pluginManager.registerEvents(new HangingBreakByEntityListener(dataHandler), this);
@@ -51,7 +52,6 @@ public final class AltarCrafting extends JavaPlugin {
         log.info("Setting up commands...");
         BukkitCommandHandler commandHandler = BukkitCommandHandler.create(this);
         AutoCompleter autoCompleter = commandHandler.getAutoCompleter();
-        dataHandler.setAutoCompleter(autoCompleter);
         autoCompleter.registerSuggestionFactory(parameter -> {
             if (parameter.hasAnnotation(AutoCompleteOnlinePlayers.class)) {
                 return (args, sender, command) -> {
@@ -80,7 +80,7 @@ public final class AltarCrafting extends JavaPlugin {
 
         commandHandler.register(new CancelAltarCraftingCommand(dataHandler));
         commandHandler.register(new CreateAltarCommand(dataHandler));
-        commandHandler.register(new ReloadCommand(this, dataHandler));
+        commandHandler.register(new ReloadCommand(dataHandler));
         commandHandler.registerBrigadier();
 
         log.info("Loading data...");
