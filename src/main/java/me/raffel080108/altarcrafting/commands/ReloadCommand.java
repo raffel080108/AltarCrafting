@@ -10,12 +10,10 @@ import revxrsal.commands.bukkit.annotation.CommandPermission;
 import revxrsal.commands.command.CommandActor;
 
 public final class ReloadCommand {
-    private final AltarCrafting main;
     private final Utils utils;
     private final DataHandler dataHandler;
 
     public ReloadCommand(AltarCrafting main, DataHandler dataHandler) {
-        this.main = main;
         this.dataHandler = dataHandler;
         this.utils = new Utils(main, dataHandler);
     }
@@ -29,7 +27,7 @@ public final class ReloadCommand {
         if (utils.loadConfigurations()) {
             String message = messages.getString("message-reload-configuration-success");
             sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§aConfiguration reloaded successfully");
-            main.getLogger().info("Configuration reloaded by " + sender.getName());
+            dataHandler.getLogger().info("Configuration reloaded by " + sender.getName());
         } else {
             String message = messages.getString("message-reload-configuration-error");
             sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cAn error occurred while reloading configurations, please check the server console for detailed error-log");
