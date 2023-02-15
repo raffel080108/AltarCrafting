@@ -35,7 +35,7 @@ public final class DataHandler {
 
     public DataHandler(AltarCrafting main) {
         this.main = main;
-        ingredientAmountKey = new NamespacedKey(main, "altarIngredientHolder");
+        ingredientAmountKey = new NamespacedKey(main, "ingredientAmount");
         config = main.getConfig();
         logger = main.getLogger();
     }

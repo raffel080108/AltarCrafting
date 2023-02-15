@@ -22,7 +22,7 @@ public final class ReloadCommand {
     private void reloadCommand(CommandActor sender) {
         FileConfiguration messages = dataHandler.getMessages();
 
-        dataHandler.getLogger().info("RELOADING...");
+        dataHandler.getLogger().info("Reloading configurations...");
         if (utils.loadConfigurations()) {
             String message = messages.getString("message-reload-configuration-success");
             sender.reply(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§aConfiguration reloaded successfully");

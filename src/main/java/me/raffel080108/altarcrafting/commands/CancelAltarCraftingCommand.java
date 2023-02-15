@@ -2,8 +2,10 @@ package me.raffel080108.altarcrafting.commands;
 
 import me.raffel080108.altarcrafting.data.DataHandler;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import me.raffel080108.altarcrafting.utils.Utils;
 import revxrsal.commands.annotation.Command;
@@ -24,29 +26,40 @@ public final class CancelAltarCraftingCommand {
     @Command("cancelAltarCrafting")
     private void cancelCraftingCommand(Player sender, @Named("player") @Optional(def = "") @AutoCompleteOnlinePlayers String target) {
         HashMap<Player, Location> playerCraftingAltarLocations = dataHandler.getPlayerCraftingAltarLocations();
+        FileConfiguration messages = dataHandler.getMessages();
 
         if (target.equals("") || target.equalsIgnoreCase(sender.getName())) {
             if (playerCraftingAltarLocations.containsKey(sender)) {
                 utils.cancelAltarCraftingSession(sender);
-                sender.sendMessage("§6Your altar-crafting-session was cancelled and all placed items returned to your inventory");
-            } else sender.sendMessage("§cYou do not have an active altar-crafting-session");
+                String message = messages.getString("crafting-session-cancelled");
+                sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§6Your altar-crafting-session was cancelled and all placed items returned to your inventory");
+            } else {
+                String message = messages.getString("error-self-no-active-crafting-session");
+                sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cYou do not have an active altar-crafting-session");
+            }
         } else {
             if (!sender.hasPermission("altarCrafting.cancelAltarCrafting")) {
-                sender.sendMessage("§cYou do not have permission to execute this command!");
+                String message = messages.getString("error-no-permission");
+                sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cYou do not have permission to execute this command!");
                 return;
             }
 
             Player targetPlayer = Bukkit.getPlayer(target);
             if (targetPlayer == null) {
-                sender.sendMessage("§cCould not find player " + target);
+                String message = messages.getString("error-player-not-found");
+                sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message).replace("%target%", target) : "§cCould not find player " + target);
                 return;
             }
 
             if (playerCraftingAltarLocations.containsKey(targetPlayer)) {
                 utils.cancelAltarCraftingSession(targetPlayer);
-                targetPlayer.sendMessage("§6Your altar-crafting-session was cancelled and all placed items returned to your inventory");
+                String message = messages.getString("crafting-session-cancelled");
+                targetPlayer.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§6Your altar-crafting-session was cancelled and all placed items returned to your inventory");
                 targetPlayer.playSound(targetPlayer.getLocation(), Sound.ENTITY_ITEM_BREAK, 1000F, 1F);
-            } else sender.sendMessage("§c" + target + " does not have an active altar-crafting-session");
+            } else {
+                String message = messages.getString("error-target-no-active-crafting-session");
+                sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message).replace("%target%", target) : "§c" + target + " does not have an active altar-crafting-session");
+            }
         }
     }
 }

@@ -27,3 +27,11 @@ message-altar-creation-success: "&aAltar created successfully!"
 
 message-break-altar-no-permission: "&cYou do not have permission to break that block!"
 message-break-altar: "&6You broke an altar!"
+
+crafting-session-cancelled: "&6Your altar-crafting-session was cancelled and all placed items returned to your inventory"
+# Placeholder %target% is available for this message
+error-target-no-active-crafting-session: "&c%target% does not have an active altar-crafting-session"
+error-self-no-active-crafting-session: "&cYou do not have an active altar-crafting-session"
+# Placeholder %target% is available for this message
+error-player-not-found: "&cCould not find player %target%"
+error-no-permission: "&cYou do not have permission to execute this command!"
