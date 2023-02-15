@@ -1,3 +1,19 @@
+/*
+   Copyright 2023 Raphael Roehrig (raffel080108)
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+
 package me.raffel080108.altarcrafting.listeners;
 
 import me.raffel080108.altarcrafting.AltarCrafting;
@@ -43,7 +59,7 @@ public final class AltarCraftHandler implements Listener {
         HashMap<ItemStack, Location> placedItemsLocations = dataHandler.getPlacedItemsLocations();
         HashMap<Location, String> altarLocations = dataHandler.getAltarLocations();
         MultiValuedMap<Location, ItemStack> itemsPlacedForCrafting = dataHandler.getItemsPlacedForCrafting();
-        HashMap<Player, BukkitTask> activeCraftTimeoutTasks = dataHandler.getActiveCraftingTasks();
+        HashMap<Player, BukkitTask> activeCraftTimeoutTasks = dataHandler.getActiveCraftingTimeoutTasks();
         ArrayList<Player> craftingInProgress = dataHandler.getCraftingInProgress();
         HashMap<Player, Long> interactEventCooldown = dataHandler.getInteractEventCooldown();
         FileConfiguration messages = dataHandler.getMessages();
