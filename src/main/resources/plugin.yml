@@ -1,8 +1,0 @@
-name: AltarCrafting
-version: '${project.version}'
-main: me.raffel080108.altarcrafting.AltarCrafting
-api-version: 1.18
-authors: [ raffel080108 ]
-
-softdepend:
-  - MMOItems
