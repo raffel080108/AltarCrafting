@@ -257,8 +257,13 @@ public final class Utils {
                         meta.addEnchant(enchantment, enchantmentLevel, true);
                 }
             }
+
             if (nbtParams.getBoolean("hide-enchants"))
                 meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
+            int customModelData = nbtParams.getInt("custom-model-data", -1);
+            if (customModelData != -1)
+                meta.setCustomModelData(customModelData);
 
             item.setItemMeta(meta);
         }

@@ -34,6 +34,7 @@
 # - lore (optional) -> Lore of the item - List format
 # - [enchantments] (optional) -> List format; Format: (enchantment-name):(level)
 # - hide-enchants (optional) -> Sets the item flag on the item, that will hide enchantments from display to a player looking at the item in-game - Has no effect when set on an ingredient item
+# - custom-model-data (optional) -> Required custom model-data for recipe-input or a custom model-data to apply for recipe-output items. Note: id '-1' is reserved for internal use and will not apply correctly
 
 # Command Parameters
 # - type [player/console] -> Command type "player" will dispatch the command as player, command type "console" will dispatch the command trough the console
