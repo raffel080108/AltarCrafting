@@ -157,7 +157,7 @@ public final class AltarCraftHandler implements Listener {
             placedItemsLocations.put(item, itemFrameLocation);
         } else {
             Collection<ItemStack> placedItems = itemsPlacedForCrafting.get(clickedLocation);
-            if (placedItems.size() == 0) {
+            if (placedItems.isEmpty()) {
                 player.playSound(playerLocation, Sound.ENTITY_VILLAGER_NO, 1000F, 1F);
                 String message = messages.getString("message-crafting-failed-no-items");
                 player.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cPlease place items on the altar before trying to craft something");
@@ -165,7 +165,7 @@ public final class AltarCraftHandler implements Listener {
             }
 
             String message = messages.getString("message-crafting-failed-internal-error");
-            String playerErrorMsg = message != null ? ChatColor.translateAlternateColorCodes('&', message) : "&cInternal error occurred while attempting to parse valid-recipe-check";
+            String playerErrorMsg = message != null ? ChatColor.translateAlternateColorCodes('&', message) : "§cInternal error occurred while attempting to parse valid-recipe-check";
 
             String altarParamsPath = altarLocations.get(clickedLocation);
             ConfigurationSection altarParams = config.getConfigurationSection(altarParamsPath);
@@ -173,6 +173,27 @@ public final class AltarCraftHandler implements Listener {
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 1000F, 1F);
                 player.sendMessage(playerErrorMsg);
                 log.severe("Could not find parameters for altar at path " + altarParamsPath + ", while attempting to parse a valid-recipe-check");
+                return;
+            }
+
+            int altarType = altarParams.getInt("altar-type");
+            if (altarType == 0) {
+                player.sendMessage(playerErrorMsg);
+                log.severe("Invalid altar-type for altar " + altarParamsPath);
+                return;
+            }
+
+            ArrayList<Location> altarIngredientPlacementLocations = new ArrayList<>();
+            for (Map.Entry<Location, Location> entry : ingredientPlacementLocations.entrySet()) {
+                Location location = entry.getKey();
+                if (entry.getValue().equals(clickedLocation))
+                    altarIngredientPlacementLocations.add(new Location(world, location.getX() + 0.5D,
+                            location.getY() + 1, location.getZ() + 0.5D));
+            }
+
+            String invalidAltarMsg = "§cInvalid Altar - The configuration for this altar has been changed and the altar-shape is no longer valid";
+            if (altarIngredientPlacementLocations.size() != altarType) {
+                player.sendMessage(invalidAltarMsg);
                 return;
             }
 
@@ -338,14 +359,6 @@ public final class AltarCraftHandler implements Listener {
                     } else
                         particleData = null;
 
-                    ArrayList<Location> altarIngredientPlacementLocations = new ArrayList<>();
-                    for (Map.Entry<Location, Location> entry : ingredientPlacementLocations.entrySet()) {
-                        Location location = entry.getKey();
-                        if (entry.getValue().equals(clickedLocation))
-                            altarIngredientPlacementLocations.add(new Location(world, location.getX() + 0.5D,
-                                    location.getY() + 1, location.getZ() + 0.5D));
-                    }
-
                     ArrayList<Boolean> hasPlacedItem = new ArrayList<>();
                     locationsLoop:
                     for (Location location : altarIngredientPlacementLocations) {
@@ -359,7 +372,7 @@ public final class AltarCraftHandler implements Listener {
                     }
 
                     ArrayList<Location> startLocations = new ArrayList<>();
-                    for (int i = 0; i < altarParams.getInt("altar-type"); i++)
+                    for (int i = 0; i < altarType; i++)
                         if (hasPlacedItem.get(i))
                             startLocations.add(altarIngredientPlacementLocations.get(i));
 

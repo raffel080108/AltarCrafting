@@ -31,7 +31,12 @@ public final class CancelAltarCraftingCommand {
         HashMap<Player, Location> playerCraftingAltarLocations = dataHandler.getPlayerCraftingAltarLocations();
         FileConfiguration messages = dataHandler.getMessages();
 
-        if (target.equals("") || target.equalsIgnoreCase(sender.getName())) {
+        if (target.isEmpty() || target.equalsIgnoreCase(sender.getName())) {
+            if (dataHandler.getCraftingInProgress().contains(sender)) {
+                sender.sendMessage("§cYou may not cancel a crafting session while actively crafting something");
+                return;
+            }
+
             if (playerCraftingAltarLocations.containsKey(sender)) {
                 utils.cancelAltarCraftingSession(sender);
                 String message = messages.getString("crafting-session-cancelled");
@@ -51,6 +56,11 @@ public final class CancelAltarCraftingCommand {
             if (targetPlayer == null) {
                 String message = messages.getString("error-player-not-found");
                 sender.sendMessage(message != null ? ChatColor.translateAlternateColorCodes('&', message).replace("%target%", target) : "§cCould not find player " + target);
+                return;
+            }
+
+            if (dataHandler.getCraftingInProgress().contains(targetPlayer)) {
+                sender.sendMessage("§cYou may not cancel a crafting session while someone is actively crafting something");
                 return;
             }
 
